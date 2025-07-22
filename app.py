@@ -8,6 +8,7 @@ import plotly.express as px
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import nltk
 from nltk.corpus import stopwords
+from scipy.sparse import hstack
 
 # Konfigurasi halaman
 st.set_page_config(
@@ -151,28 +152,29 @@ if st.session_state.resources:
             rating = st.slider("Rating (1-5):", 1, 5, 3, 1)
             
             if st.button("🚀 Analisis Sekarang", use_container_width=True):
-                if not text.strip():
-                    st.warning("Mohon masukkan teks ulasan terlebih dahulu!")
-                else:
-                    with st.spinner("Menganalisis sentimen..."):
-                        loading_placeholder = st.empty()
-                        loading_placeholder.image("https://i.gifer.com/ZZ5H.gif", width=100)
+    if not text.strip():
+        st.warning("Mohon masukkan teks ulasan terlebih dahulu!")
+    else:
+        with st.spinner("Menganalisis sentimen..."):
+            loading_placeholder = st.empty()
+            loading_placeholder.image("https://i.gifer.com/ZZ5H.gif", width=100)
 
-                        try:
-                            cleaned_text = clean_text(text)
-                            text_vector = tfidf.transform([cleaned_text])
-                            features = np.hstack([text_vector.toarray(), np.array([[rating/5.0]])])
-                            pred = model.predict(features)[0]
-                            result = ["negatif", "netral", "positif"][pred]
+            try:
+                cleaned_text = clean_text(text)
+                text_vector = tfidf.transform([cleaned_text])
+                rating_vector = np.array([[rating / 5.0]])  # Normalisasi rating
+                features = hstack([text_vector, rating_vector])  # Gabung TF-IDF + rating
 
-                            st.session_state.result = {
-                                'text': text,
-                                'cleaned_text': cleaned_text,
-                                'rating': rating,
-                                'sentiment': result,
-                                'pred_value': pred
-                            }
+                pred = model.predict(features)[0]
+                result = ["negatif", "netral", "positif"][pred]
 
+                st.session_state.result = {
+                    'text': text,
+                    'cleaned_text': cleaned_text,
+                    'rating': rating,
+                    'sentiment': result,
+                    'pred_value': pred
+                }
                         except Exception as e:
                             st.error(f"Terjadi kesalahan: {str(e)}")
                         finally:
