@@ -100,6 +100,10 @@ def load_resources():
         # TF-IDF Vectorizer
         with open('tfidf_vectorizer.pkl', 'rb') as f:
             resources['tfidf'] = pickle.load(f)
+        # ✅ Tambahkan verifikasi untuk memastikan vectorizer sudah di-fit
+        if not hasattr(resources['tfidf'], 'vocabulary_') or len(resources['tfidf'].vocabulary_) == 0:
+            st.error("TF-IDF vectorizer belum dipasang (fit). Harap gunakan file vectorizer yang sudah di-fit.")
+            st.stop()
         progress_bar.progress(60)
 
         status_text.text("Sistem siap digunakan!")
