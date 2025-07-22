@@ -69,19 +69,24 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Fungsi cleaning text
+
+
 def clean_text(text):
     if not isinstance(text, str):
         return ""
     text = text.lower()
     text = re.sub(r'\d+|[^\w\s]', ' ', text)
-    words = [stemmer.stem(word) for word in text.split() if word not in stop_words]
+    words = [stemmer.stem(word)
+                          for word in text.split() if word not in stop_words]
     return " ".join(words)
 
 # Load resources
+
+
 def load_resources():
     progress_bar = st.progress(0)
     status_text = st.empty()
-    
+
     resources = {}
     try:
         # Stemmer dan stopwords
@@ -90,13 +95,13 @@ def load_resources():
         resources['stemmer'] = factory.create_stemmer()
         resources['stop_words'] = set(stopwords.words('indonesian'))
         progress_bar.progress(20)
-        
+
         # Model Logistic Regression
         status_text.text("Memuat model analisis...")
         with open('models/logistic.pkl', 'rb') as f:
             resources['model'] = pickle.load(f)
         progress_bar.progress(40)
-        
+
         # TF-IDF Vectorizer
         with open('models/tfidf_vectorizer.pkl', 'rb') as f:
             resources['tfidf'] = pickle.load(f)
@@ -106,11 +111,12 @@ def load_resources():
         time.sleep(0.5)
         status_text.empty()
         progress_bar.empty()
-        
+
         return resources
     except Exception as e:
         st.error(f"Gagal memuat resources: {str(e)}")
         return None
+
 
 # Sidebar
 with st.sidebar:
@@ -147,23 +153,29 @@ if st.session_state.resources:
     with st.container():
         col1, col2 = st.columns([3, 1])
         with col1:
-            text = st.text_area("Masukkan teks ulasan:", height=150, placeholder="Contoh: Aplikasi ini sangat membantu...")
+            text = st.text_area(
+    "Masukkan teks ulasan:",
+    height=150,
+     placeholder="Contoh: Aplikasi ini sangat membantu...")
         with col2:
             rating = st.slider("Rating (1-5):", 1, 5, 3, 1)
-            
+
             if st.button("🚀 Analisis Sekarang", use_container_width=True):
     if not text.strip():
         st.warning("Mohon masukkan teks ulasan terlebih dahulu!")
     else:
         with st.spinner("Menganalisis sentimen..."):
             loading_placeholder = st.empty()
-            loading_placeholder.image("https://i.gifer.com/ZZ5H.gif", width=100)
+            loading_placeholder.image(
+    "https://i.gifer.com/ZZ5H.gif", width=100)
 
             try:
                 cleaned_text = clean_text(text)
                 text_vector = tfidf.transform([cleaned_text])
-                rating_vector = np.array([[rating / 5.0]])  # Normalisasi rating
-                features = hstack([text_vector, rating_vector])  # Gabung TF-IDF + rating
+                rating_vector = np.array(
+                    [[rating / 5.0]])  # Normalisasi rating
+                # Gabung TF-IDF + rating
+                features = hstack([text_vector, rating_vector])
 
                 pred = model.predict(features)[0]
                 result = ["negatif", "netral", "positif"][pred]
@@ -175,10 +187,10 @@ if st.session_state.resources:
                     'sentiment': result,
                     'pred_value': pred
                 }
-                        except Exception as e:
-                            st.error(f"Terjadi kesalahan: {str(e)}")
-                        finally:
-                            loading_placeholder.empty()
+                   except Exception as e:
+                        st.error(f"Terjadi kesalahan: {str(e)}")
+                    finally:
+                        loading_placeholder.empty()
 
     # Output
     if 'result' in st.session_state:
@@ -208,9 +220,11 @@ if st.session_state.resources:
         if show_details:
             with st.expander("🔍 Detail Analisis", expanded=True):
                 st.write("**Proses Cleaning:**")
-                st.code(f"Original: {result['text']}\nCleaned: {result['cleaned_text']}")
+                st.code(
+                    f"Original: {result['text']}\nCleaned: {result['cleaned_text']}")
                 st.write("**Vektor Fitur:**")
-                st.write(f"Dimensi TF-IDF: {tfidf.transform([result['cleaned_text']]).shape}")
+                st.write(
+                    f"Dimensi TF-IDF: {tfidf.transform([result['cleaned_text']]).shape}")
                 st.write(f"Rating ternormalisasi: {result['rating']/5.0:.2f}")
 
         if show_visualization:
@@ -244,7 +258,7 @@ if st.session_state.resources:
 st.markdown("---")
 st.markdown("""
 <small>
-    Sistem analisis sentimen menggunakan model machine learning. 
+    Sistem analisis sentimen menggunakan model machine learning.
     Hasil analisis merupakan prediksi otomatis dan dapat mengandung kesalahan.
 </small>
 """, unsafe_allow_html=True)
