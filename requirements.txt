@@ -7,3 +7,4 @@ plotly==5.21.0
 Sastrawi==1.0.1
 gensim==4.3.2
 smart_open==6.4.0
+scipy==1.11.4
