@@ -93,12 +93,12 @@ def load_resources():
         
         # Model Logistic Regression
         status_text.text("Memuat model analisis...")
-        with open('models/logistic.pkl', 'rb') as f:
+        with open('logistic.pkl', 'rb') as f:
             resources['model'] = pickle.load(f)
         progress_bar.progress(40)
         
         # TF-IDF Vectorizer
-        with open('models/tfidf_vectorizer.pkl', 'rb') as f:
+        with open('tfidf_vectorizer.pkl', 'rb') as f:
             resources['tfidf'] = pickle.load(f)
         progress_bar.progress(60)
 
