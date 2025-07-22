@@ -8,7 +8,6 @@ import plotly.express as px
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import nltk
 from nltk.corpus import stopwords
-from gensim.models import Word2Vec
 
 # Konfigurasi halaman
 st.set_page_config(
@@ -101,13 +100,6 @@ def load_resources():
         with open('models/tfidf_vectorizer.pkl', 'rb') as f:
             resources['tfidf'] = pickle.load(f)
         progress_bar.progress(60)
-        
-        # # Word2Vec dan tokenizer (jika ingin model lain)
-        # status_text.text("Memuat komponen tambahan...")
-        # # resources['w2v'] = Word2Vec.load('models/w2v_model.model')
-        # with open('models/tokenizer.pkl', 'rb') as f:
-        #     resources['tokenizer'] = pickle.load(f)
-        # progress_bar.progress(100)
 
         status_text.text("Sistem siap digunakan!")
         time.sleep(0.5)
@@ -124,7 +116,7 @@ with st.sidebar:
     st.title("Menu Navigasi")
     analysis_type = st.radio(
         "Analisis",
-        "Logistic Regression",
+        ["Logistic Regression"],
         index=0
     )
     st.markdown("---")
