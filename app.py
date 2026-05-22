@@ -93,9 +93,9 @@ def load_resources():
         resources['stop_words'] = set(stopwords.words('indonesian'))
         progress_bar.progress(30)
         
-        # Model Deep Learning LSTM (.h5)
+        # Model Deep Learning LSTM (.keras)
         status_text.text("Memuat model Deep Learning LSTM...")
-        resources['model'] = tf.keras.models.load_model('lstm_model_whatsapp.h5')
+        resources['model'] = tf.keras.models.load_model('lstm_model_whatsapp.keras')
         progress_bar.progress(70)
         
         # Tokenizer (.pkl) menggantikan TF-IDF
