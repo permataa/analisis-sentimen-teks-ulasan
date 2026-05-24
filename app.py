@@ -11,6 +11,15 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import nltk
 from nltk.corpus import stopwords
 
+# ========== CUSTOM LAYER UNTUK MENGATASI ERROR QUANTIZATION_CONFIG ==========
+class CustomEmbedding(tf.keras.layers.Embedding):
+    """Custom Embedding layer yang mengabaikan 'quantization_config' saat loading model."""
+    def __init__(self, *args, **kwargs):
+        # Hapus parameter yang tidak dikenali oleh versi Keras saat ini
+        kwargs.pop('quantization_config', None)
+        super().__init__(*args, **kwargs)
+# ============================================================================
+
 # Konfigurasi halaman
 st.set_page_config(
     page_title="Analisis Sentimen",
@@ -93,12 +102,15 @@ def load_resources():
         resources['stop_words'] = set(stopwords.words('indonesian'))
         progress_bar.progress(30)
         
-        # Model Deep Learning LSTM (.keras)
+        # Model Deep Learning LSTM (.keras) dengan custom_objects
         status_text.text("Memuat model Deep Learning LSTM...")
-        resources['model'] = tf.keras.models.load_model('lstm_model_whatsapp.keras')
+        resources['model'] = tf.keras.models.load_model(
+            'lstm_model_whatsapp.keras',
+            custom_objects={'Embedding': CustomEmbedding}  # KRUSIAL!
+        )
         progress_bar.progress(70)
         
-        # Tokenizer (.pkl) menggantikan TF-IDF
+        # Tokenizer (.pkl)
         status_text.text("Memuat objek Tokenizer...")
         with open('tokenizer.pkl', 'rb') as f:
             resources['tokenizer'] = pickle.load(f)
@@ -229,7 +241,12 @@ if st.session_state.resources:
                 st.code(f"Original : {result['text']}\nCleaned  : {result['cleaned_text']}")
                 st.write("**Dimensi Data Masukan Keras:**")
                 st.write(f"Jumlah Token Kata Terbaca: `{result['sequence_len']}` kata")
-                st.write(f"Bentuk Matriks Padding Teks (Shape): `{text_padded.shape}` (Maxlen: 150)")
+                # text_padded didefinisikan di dalam blok try, perlu disimpan juga atau dihitung ulang
+                # Lebih aman: hitung ulang atau simpan di session_state
+                # Di sini kita hitung ulang (tidak berat)
+                tmp_seq = tokenizer.texts_to_sequences([result['cleaned_text']])
+                tmp_padded = pad_sequences(tmp_seq, maxlen=150, padding='post', truncating='post')
+                st.write(f"Bentuk Matriks Padding Teks (Shape): `{tmp_padded.shape}` (Maxlen: 150)")
                 st.write(f"Skor Rating Hasil Skala MinMax (Normalisasi): `{result['rating']/5.0:.2f}`")
 
         # Grafik Distribusi Visualisasi Probabilitas
